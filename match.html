@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live University Match Center</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col justify-center items-center p-4">
+
+  <div class="w-full max-w-md bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-700 my-4">
+    
+    <div class="flex border-b border-gray-700/60 bg-gray-800">
+      <button id="btn-match" onclick="switchTab('match')" class="w-1/2 py-4 text-xs font-bold uppercase tracking-wider text-green-400 border-b-2 border-green-400 transition-all duration-200">
+        🗓️ Match Info
+      </button>
+      <button id="btn-lineup" onclick="switchTab('lineup')" class="w-1/2 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-gray-200 transition-all duration-200">
+        🏃‍♂️ Lineups
+      </button>
+    </div>
+
+    <div id="tab-content-match" class="block">
+      <div class="p-4 bg-gradient-to-r from-blue-900/40 via-gray-800 to-red-900/40 text-center border-b border-gray-700/40">
+        <span id="match-group" class="px-3 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] font-bold rounded-full tracking-widest uppercase">
+          Tournament Fixture
+        </span>
+      </div>
+
+      <div class="p-8 text-center bg-gradient-to-b from-gray-800/50 to-gray-900/40">
+        <div class="grid grid-cols-3 items-center">
+          <div class="text-center">
+            <div class="w-14 h-14 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center font-black text-xl border-2 border-white/10 shadow-lg transform rotate-3">ISB</div>
+            <p id="match-home-name" class="text-xs font-bold mt-3 text-gray-200 truncate">Loading...</p>
+          </div>
+          <div class="text-center">
+            <span class="text-lg font-black tracking-widest text-gray-500 font-mono">VS</span>
+          </div>
+          <div class="text-center">
+            <div class="w-14 h-14 bg-red-600 rounded-2xl mx-auto flex items-center justify-center font-black text-xl border-2 border-white/10 shadow-lg transform -rotate-3">CE</div>
+            <p id="match-away-name" class="text-xs font-bold mt-3 text-gray-200 truncate">Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 bg-gray-900/60 border-t border-gray-700/40 text-center space-y-4">
+        <div>
+          <p class="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Kickoff Date & Time</p>
+          <p id="match-date" class="text-base font-bold text-green-400 mt-1">Date Loading...</p>
+          <p id="match-time" class="text-sm font-semibold text-gray-300 font-mono mt-0.5">Time Loading...</p>
+        </div>
+        <div class="bg-gray-800/80 rounded-2xl p-3 border border-gray-700/50 flex items-center justify-center gap-2">
+          <span class="text-sm">📍</span>
+          <span class="text-xs font-semibold text-gray-300">YCC Main Football Field</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-content-lineup" class="hidden">
+      <div class="p-4 bg-gray-800 text-center border-b border-gray-700">
+        <h2 id="team-title" class="text-base font-bold text-green-400">Loading Team...</h2>
+        
+        <div class="flex justify-center bg-gray-900/80 rounded-xl p-1 mt-3 border border-gray-700 max-w-xs mx-auto">
+          <button id="toggle-home" onclick="toggleActiveTeam('home')" class="w-1/2 py-1.5 px-3 text-xs font-bold rounded-lg bg-blue-600 text-white transition-all duration-150">
+            Home
+          </button>
+          <button id="toggle-away" onclick="toggleActiveTeam('away')" class="w-1/2 py-1.5 px-3 text-xs font-bold rounded-lg text-gray-400 hover:text-gray-200 transition-all duration-150">
+            Away
+          </button>
+        </div>
+      </div>
+
+      <div class="relative w-full aspect-[3/4] bg-gradient-to-b from-green-800 to-green-700 p-6 flex flex-col justify-between border-b border-gray-700 overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/10 rounded-full pointer-events-none"></div>
+        <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-white/10 pointer-events-none"></div>
+
+        <div class="grid grid-cols-3 w-full z-10 pt-4 text-center items-center">
+          <div id="row-FWD-LEFT" class="flex justify-center items-center min-h-[60px]"></div>
+          <div id="row-FWD-CENTER" class="flex justify-center items-center min-h-[60px]"></div>
+          <div id="row-FWD-RIGHT" class="flex justify-center items-center min-h-[60px]"></div>
+        </div>
+        <div class="grid grid-cols-3 w-full z-10 text-center items-center">
+          <div id="row-MID-LEFT" class="flex justify-center items-center min-h-[60px]"></div>
+          <div id="row-MID-CENTER" class="flex justify-center items-center min-h-[60px]"></div>
+          <div id="row-MID-RIGHT" class="flex justify-center items-center min-h-[60px]"></div>
+        </div>
+        <div class="grid grid-cols-3 w-full z-10 text-center items-center">
+          <div id="row-DEF-LEFT" class="flex justify-center items-center min-h-[60px]"></div>
+          <div id="row-DEF-CENTER" class="flex justify-center items-center min-h-[60px]"></div>
+          <div id="row-DEF-RIGHT" class="flex justify-center items-center min-h-[60px]"></div>
+        </div>
+        <div class="grid grid-cols-3 w-full z-10 pb-4 text-center items-center">
+          <div></div>
+          <div id="row-GK-CENTER" class="flex justify-center items-center min-h-[60px]"></div>
+          <div></div>
+        </div>
+      </div>
+
+      <div class="p-6 bg-gray-800/50">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 border-b border-gray-700 pb-2">Substitutes Bench</h3>
+        <div id="subs-bench" class="grid grid-cols-1 gap-2"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 1. INITIALIZE SUPABASE
+    const SUPABASE_URL = "https://odylmxsqaxdljgzalggk.supabase.co"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9keWxteHNxYXhkbGpnemFsZ2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NDQ0NjAsImV4cCI6MjA5NzAyMDQ2MH0.bM3bdIawHfFhjcFyUauxash5s8WxJ8I3eDScDXziXks"; 
+    
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Dynamic state trackers
+    let cachedMatchData = null;
+    let currentViewedSide = 'home'; // Tracks whether we are viewing 'home' or 'away' rosters
+
+    function switchTab(activeTab) {
+      const matchTab = document.getElementById('tab-content-match');
+      const lineupTab = document.getElementById('tab-content-lineup');
+      const btnMatch = document.getElementById('btn-match');
+      const btnLineup = document.getElementById('btn-lineup');
+
+      if (activeTab === 'match') {
+        matchTab.classList.replace('hidden', 'block');
+        lineupTab.classList.replace('block', 'hidden');
+        btnMatch.className = "w-1/2 py-4 text-xs font-bold uppercase tracking-wider text-green-400 border-b-2 border-green-400 transition-all duration-200";
+        btnLineup.className = "w-1/2 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-gray-200 transition-all duration-200";
+      } else {
+        lineupTab.classList.replace('hidden', 'block');
+        matchTab.classList.replace('block', 'hidden');
+        btnLineup.className = "w-1/2 py-4 text-xs font-bold uppercase tracking-wider text-green-400 border-b-2 border-green-400 transition-all duration-200";
+        btnMatch.className = "w-1/2 py-4 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-gray-200 transition-all duration-200";
+      }
+    }
+
+    // Formation Engine Router
+    function getPitchTargetId(position, alignment) {
+      if (!position) return null;
+      const pos = position.toUpperCase().trim();
+      let side = (alignment || 'CENTER').toUpperCase().trim();
+      if (!['LEFT', 'CENTER', 'RIGHT'].includes(side)) side = 'CENTER';
+
+      if (pos === 'GK') return 'row-GK-CENTER';
+      if (['DEF', 'CB', 'LB', 'RB', 'LWB', 'RWB'].includes(pos)) return `row-DEF-${side}`;
+      if (['MID', 'CM', 'DM', 'AM', 'LM', 'RM'].includes(pos)) return `row-MID-${side}`;
+      if (['FWD', 'ST', 'CF', 'SS', 'LW', 'RW'].includes(pos)) return `row-FWD-${side}`;
+      return null; 
+    }
+
+    function createPlayerHTML(name, number, position) {
+      const isGK = position?.toUpperCase().trim() === 'GK';
+      // Home team uses Blue jersey, Away team uses Red jersey like FotMob!
+      const jerseyColor = isGK ? 'bg-yellow-500 text-gray-900' : (currentViewedSide === 'home' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white');
+      
+      return `
+        <div class="flex flex-col items-center animate-fade-in">
+          <div class="w-10 h-10 ${jerseyColor} border-2 border-white rounded-full flex items-center justify-center font-bold text-sm shadow-md relative">
+            ${number || ''}
+            <span class="absolute -top-2 -right-2 bg-black text-[9px] text-white px-1 rounded border border-white/20 scale-75">${position}</span>
+          </div>
+          <span class="text-[11px] font-semibold mt-1 bg-black/50 px-1.5 py-0.5 rounded shadow max-w-[85px] truncate text-center">${name}</span>
+        </div>`;
+    }
+
+    function createSubstituteHTML(name, number, position) {
+      return `
+        <div class="flex items-center justify-between bg-gray-700/30 px-4 py-2 rounded-xl border border-gray-700/50 animate-fade-in">
+          <div class="flex items-center gap-3">
+            <span class="w-6 text-sm font-bold text-gray-400 text-center">${number || '-'}</span>
+            <span class="text-sm font-medium text-gray-200">${name}</span>
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wide px-2 py-0.5 bg-gray-800 text-gray-400 rounded-md border border-gray-600/30">${position}</span>
+        </div>`;
+    }
+
+    // NEW: Toggles the switch styling and swaps out the roster rendering instantly
+    function toggleActiveTeam(side) {
+      if (side === currentViewedSide) return;
+      currentViewedSide = side;
+
+      const btnHome = document.getElementById('toggle-home');
+      const btnAway = document.getElementById('toggle-away');
+
+      if (side === 'home') {
+        btnHome.className = "w-1/2 py-1.5 px-3 text-xs font-bold rounded-lg bg-blue-600 text-white transition-all duration-150";
+        btnAway.className = "w-1/2 py-1.5 px-3 text-xs font-bold rounded-lg text-gray-400 hover:text-gray-200 transition-all duration-150";
+        document.getElementById('team-title').innerText = cachedMatchData.home.team_name;
+        renderSquadList(cachedMatchData.home_team_id);
+      } else {
+        btnAway.className = "w-1/2 py-1.5 px-3 text-xs font-bold rounded-lg bg-red-600 text-white transition-all duration-150";
+        btnHome.className = "w-1/2 py-1.5 px-3 text-xs font-bold rounded-lg text-gray-400 hover:text-gray-200 transition-all duration-150";
+        document.getElementById('team-title').innerText = cachedMatchData.away.team_name;
+        renderSquadList(cachedMatchData.away_team_id);
+      }
+    }
+
+    // Helper to clear and loop through a target team's players onto the pitch slots
+    async function renderSquadList(targetTeamId) {
+      // Clear all layout slots
+      const slots = [
+        'row-FWD-LEFT', 'row-FWD-CENTER', 'row-FWD-RIGHT',
+        'row-MID-LEFT', 'row-MID-CENTER', 'row-MID-RIGHT',
+        'row-DEF-LEFT', 'row-DEF-CENTER', 'row-DEF-RIGHT',
+        'row-GK-CENTER', 'subs-bench'
+      ];
+      slots.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+      });
+
+      try {
+        const { data: players, error } = await supabaseClient
+          .from('players').select('*').eq('team_id', targetTeamId);
+
+        if (error) throw error;
+
+        if (players && players.length > 0) {
+          let hasSubs = false;
+          players.forEach(player => {
+            if (player.is_starter === true) {
+              const targetId = getPitchTargetId(player.position, player.alignment);
+              if (targetId) {
+                const el = document.getElementById(targetId);
+                if (el) el.innerHTML += createPlayerHTML(player.name, player.jersey_number, player.position);
+              }
+            } else {
+              hasSubs = true;
+              document.getElementById('subs-bench').innerHTML += createSubstituteHTML(player.name, player.jersey_number, player.position);
+            }
+          });
+          if (!hasSubs) document.getElementById('subs-bench').innerHTML = `<p class="text-xs text-gray-500 italic p-2">No substitutes listed</p>`;
+        } else {
+          document.getElementById('subs-bench').innerHTML = `<p class="text-xs text-gray-500 italic p-2">No players found in database for this team</p>`;
+        }
+      } catch (err) {
+        console.error("Squad Rendering Error:", err.message);
+      }
+    }
+
+    // 2. MAIN CONTEXT INTAKE
+    async function loadMatchCenterData(matchId) {
+      try {
+        const { data: match, error: matchError } = await supabaseClient
+          .from('matches')
+          .select(`id, match_date_time, status, home_team_id, away_team_id,
+            home:home_team_id(team_name, group_name),
+            away:away_team_id(team_name)
+          `).eq('id', matchId).single();
+
+        if (matchError) throw matchError;
+
+        // Cache globally so toggle switches can reference ID mappings later without re-querying
+        cachedMatchData = match;
+
+        // Populate baseline scoreboard cards
+        document.getElementById('match-home-name').innerText = match.home ? match.home.team_name : 'Home Team';
+        document.getElementById('match-away-name').innerText = match.away ? match.away.team_name : 'Away Team';
+        if (match.home && match.home.group_name) document.getElementById('match-group').innerText = match.home.group_name;
+
+        if (match.match_date_time) {
+          const dateObj = new Date(match.match_date_time);
+          document.getElementById('match-date').innerText = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+          document.getElementById('match-time').innerText = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + " (MMT)";
+        }
+
+        // Render Home team sheet first by default
+        document.getElementById('team-title').innerText = match.home.team_name;
+        renderSquadList(match.home_team_id);
+
+      } catch (error) {
+        console.error("System Loading Error:", error.message);
+      }
+    }
+
+    // Run system on match row 1
+    loadMatchCenterData(1);
+  </script>
+</body>
+</html>
